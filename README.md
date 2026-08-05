@@ -4,17 +4,15 @@
 **[🚀 View Live Demo](https://maan-ki-baat.vercel.app/)**
 
 ## ✨ Features
-- 🤖 **AI Mental Health Companion** - Lucius provides empathetic, professional support
-- 💬 **Intelligent Responses** - Advanced keyword matching for contextual replies
+- 🤖 **AI Mental Health Companion** - Lucius provides empathetic, contextual support powered by a real LLM
+- 🔀 **Multi-Provider Fallback** - Tries Groq, then Nvidia NIM, then Gemini, so one provider's rate limit doesn't take the app down
+- 🛡️ **Rate Limited** - Per-IP request limiting protects the free-tier API keys from abuse
+- 🧠 **Conversation Memory** - Recent chat history is sent with each message for coherent, non-generic replies
 - 🎨 **Beautiful UI** - Gradient design with smooth animations
 - 📱 **Responsive Design** - Works perfectly on all devices
-- 🏥 **Mental Health Focused** - Specialized for emotional wellness conversations
-- ⚡ **No API Key Required** - Works out of the box!
-- 🎭 **Realistic Typing** - Professional typing animations and delays
 
-## 🚀 Quick Start (NO API KEYS NEEDED!)
+## 🚀 Quick Start
 
-### Option 1: Use Immediately (Keyword-Based AI)
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/mannkibaat.git
@@ -23,19 +21,22 @@ cd mannkibaat
 # Install dependencies
 npm install
 
-# Start the app
-npm start
+# Add API keys (at least one required)
+cp .env.example .env  # then fill in your keys
 ```
 
-### Option 2: Enhanced AI (Optional - Add Your Own API Key)
-For even smarter responses, add an OpenAI API key:
+Create a `.env` file with any of:
+```
+GROQ_API_KEY=your_groq_key      # primary - free tier at console.groq.com
+NVIDIA_API_KEY=your_nvidia_key  # fallback - free tier at build.nvidia.com
+GEMINI_API_KEY=your_gemini_key  # fallback - free tier at aistudio.google.com
+```
 
-1. Get free API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Create `.env` file in project root:
-   ```
-   OPENAI_API_KEY=sk-your_key_here
-   ```
-3. Restart the server: `npm start`
+If none of the keys are set (or every provider fails), Lucius falls back to a local keyword-matched response instead of erroring out.
+
+```bash
+npm start
+```
 
 ### Open in Browser
 Visit: **http://localhost:3003**
@@ -47,17 +48,14 @@ Visit: **http://localhost:3003**
 
 ## 💬 How It Works
 
-### Without API Key (Default)
-- Uses intelligent **keyword matching** algorithm
-- Provides **professional mental health responses**
-- **Empathetic and supportive** conversation flow
-- **No costs** or API limits
+`/api/chat` builds a message list (system prompt + recent history + the new message) and tries each configured provider in order until one succeeds:
 
-### With API Key (Enhanced)
-- Powered by **OpenAI GPT-3.5-turbo**
-- **Smarter contextual responses**
-- **More personalized conversations**
-- Requires OpenAI API key ( free credit)
+1. **Groq** (`llama-3.3-70b-versatile`) - primary, fastest free tier
+2. **Nvidia NIM** (`meta/llama-3.1-8b-instruct`) - fallback
+3. **Gemini** (`gemini-1.5-flash`) - fallback
+4. **Local keyword responses** - last resort if every provider is unavailable
+
+Requests are rate-limited per IP (20 messages / 15 min) to keep the free-tier keys from being drained by abuse.
 
 ## 🎯 Sample Conversations
 
@@ -73,7 +71,7 @@ Visit: **http://localhost:3003**
 ## 🛠️ Technical Stack
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** Node.js, Express
-- **AI Engine:** Custom keyword-based algorithm + optional OpenAI integration
+- **AI Engine:** Groq / Nvidia NIM / Gemini with automatic fallback, plus a local keyword-based safety net
 - **Deployment:** Vercel
 
 ## 📦 Deployment
@@ -81,11 +79,12 @@ Visit: **http://localhost:3003**
 ### Vercel
 1. Push code to GitHub
 2. Connect to Vercel
-3. Deploy automatically!
+3. Add `GROQ_API_KEY`, `NVIDIA_API_KEY`, `GEMINI_API_KEY` under Project Settings → Environment Variables
+4. Deploy automatically!
 
 ## 🎉 Why This Project is Special
 
-- ✅ **Fully Functional** - Works without any API keys
+- ✅ **Resilient** - Falls back across three AI providers, then a local safety net
 - ✅ **Mental Health Focused** - Specialized for emotional support
 - ✅ **Professional Quality** - Feels like a real therapy app
 - ✅ **Open Source** - Help others with mental health support
