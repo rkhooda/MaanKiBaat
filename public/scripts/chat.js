@@ -399,6 +399,7 @@ function initializeChat() {
   const chatMessages = document.querySelector('.chat-messages');
   const chatInput = document.querySelector('.chat-input');
   const sendButton = document.querySelector('.send-button');
+  const conversationHistory = [];
 
   // Add greeting message from AI with typing simulation
   setTimeout(() => {
@@ -452,13 +453,16 @@ function initializeChat() {
               const typingDelay = 1500 + Math.random() * 1500; // 1.5-3 seconds
               await new Promise(resolve => setTimeout(resolve, typingDelay));
 
-              // Send message to backend
-              const response = await fetch('http://localhost:3003/api/chat', {
+              // Send message to backend, along with recent history for context
+              const historyForRequest = conversationHistory.slice(-12);
+              conversationHistory.push({ role: 'user', content: message });
+
+              const response = await fetch('/api/chat', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json',
                   },
-                  body: JSON.stringify({ message }),
+                  body: JSON.stringify({ message, history: historyForRequest }),
               });
 
               // Remove typing indicator
@@ -469,8 +473,10 @@ function initializeChat() {
               }
 
               const data = await response.json();
-              
+
               if (data.success) {
+                  conversationHistory.push({ role: 'assistant', content: data.response });
+
                   const botMessageContainer = createBotMessage(data.response);
                   chatMessages.appendChild(botMessageContainer);
                   
@@ -507,17 +513,6 @@ function initializeChat() {
       }
   });
 }
-
-document.getElementById("send").addEventListener("click", async () => {
-  const userMessage = document.getElementById("message").value;
-  const response = await fetch("http://localhost:3000/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMessage }),
-  });
-  const data = await response.json();
-  document.getElementById("response").innerText = data.choices[0].message.content;
-});
 
 // Make sure this is called after your newPageContent is added to the DOM
 function initializeSideArrows() {
